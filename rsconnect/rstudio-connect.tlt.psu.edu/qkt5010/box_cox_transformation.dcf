@@ -1,0 +1,14 @@
+name: box_cox_transformation
+title: Box_Cox_Transformation
+username: qkt5010
+account: qkt5010
+server: rstudio-connect.tlt.psu.edu
+hostUrl: https://rstudio-connect.tlt.psu.edu:3939/__api__
+appId: 390
+bundleId: 2075
+url: https://rstudio-connect.tlt.psu.edu:3939/content/93bd9e23-da7a-4030-8870-87e6ff581c0c/
+when: 1637362337.30914
+lastSyncTime: 1637362337.30914
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: helpers.R
