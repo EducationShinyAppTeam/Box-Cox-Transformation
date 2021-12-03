@@ -108,11 +108,8 @@ ui <- list(
           br(),
           h2("Acknowledgements"),
           p(
-            "This version of the app was developed and coded by Neil J.
-            Hatfield  and Robert P. Carey, III.",
+            "This version of the app was developed and coded by Qiaojuan Tu.",
             br(),
-            "We would like to extend a special thanks to the Shiny Program
-            Students.",
             br(),
             br(),
             br(),
@@ -406,7 +403,7 @@ ui <- list(
           p(
             class = "hangingindent", 
             "Chang W and Borges Ribeiro B (2017). shinydashboard: Create
-            Dashboards with âShinyâ. R package version 0.6.1"
+            Dashboards with 'Shiny'. R package version 0.6.1"
           ),
           p(
             class = "hangingindent", 
@@ -518,6 +515,21 @@ server <- function(input, output, session) {
     )
   )
   
+  #### G7 life lambda value submit 
+  observeEvent(
+    eventExpr = input$lam,
+    updateTabItems(
+      session = session, 
+      inputId = "lam", 
+      output$submit_lam <- renderText(({
+        if (input$lam_input >= 4 | input$lam_input >= 5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
+        else if (input$lam_input < 4 | input$lam_input >= 3.5) {print("You are close!")}
+        else {print("Try again!")}
+      }))
+    )
+  )
+  
+  
   ### Set up the lamda submit button for SA ----
   observeEvent(
     eventExpr = input$lam_SA,
@@ -525,24 +537,44 @@ server <- function(input, output, session) {
       session = session, 
       inputId = "lam_SA", 
       output$lam_icon_SA <- renderIcon(
-        if (input$lam_input_SA <= 5 & input$lam_input_SA >= 4) {condition = "correct"}
-        else if (input$lam_input_SA < 4 | input$lam_input_SA >= 3.5) {condition = "partial"}
+        if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {condition = "correct"}
+        else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1) {condition = "partial"}
+        else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {condition = "partial"}
         else {condition = "incorrect"}
       )
     )
   )
   
+  #### SA life lambda value submit
+  observeEvent(
+    eventExpr =  input$lam_SA, 
+    updateTabItems(
+      session = session,
+      inputId = "lam_SA", 
+      output$submit_lam_SA <- renderText(({
+        if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
+        else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1 ) {print("You are close!")}
+        else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {print("You are close!")}
+        else {print("Try again!")}
+      })) 
+    )
+  )
+  
+  
+  
+  #### SA life lambda value submit
   
   ## Set up the Explore Page ----
   
   ### The Data Description ----
   #### SA Data Set
   output$SA_Description <- renderUI({
-    p("The SA data set gives the measurements in centimeters of the variable 
-      sepal length and width and petal length and width for 50 flowers from each
-      species of SA. Here, we only use variables Petal Length as response variable, 
-      Petal Width as predictor variable for the linear regression model.")
+    p("The data set gives the variables of 13 South America countries averged life expectancy in years
+      and income in GDP/capita from year 1900 to 2020, includes Brazil, Argentina, Colombia, Peru, Chile, Ecuador, 
+      Venezuela, Bolivia, Uruguay, Suriname, Paraguay, Trinidad and Tobago. Here, the income is used as the predictor variable,
+      and life expectancy is used as the response variable for the linear regression model.")
   })
+  
   #### Life expect vs Income Data Set  
   output$G7_Description <- renderUI({
     p("The data set gives the variables of G7 countries (Canada, UK, US, Germany, Japan,
@@ -552,23 +584,6 @@ server <- function(input, output, session) {
       regression model.")
   })
   
-  #### G7 life lambda value submit 
-  output$submit_lam <- renderText(({
-    if (input$lam_input >= 4 | input$lam_input >= 5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
-    else if (input$lam_input < 4 | input$lam_input >= 3.5) {print("You are close!")}
-    else {print("Try again!")}
-    
-    if (is.null(input$lam_input)) return(NULL)
-    
-  }))
-  
-  #### SA life lambda value submit 
-  output$submit_lam_SA <- renderText(({
-    if (input$lam_input_SA >= 4 | input$lam_input_SA >= 5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
-    else if (input$lam_input_SA < 4 | input$lam_input_SA >= 3.5) {print("You are close!")}
-    else {print("Try again!")}
-    
-  }))
   
   
   
@@ -577,7 +592,8 @@ server <- function(input, output, session) {
   output$SA_Original_Normal <- renderPlot({
     #fit linear regression model, Petal.Length as responding variable
     SA_model1 <- lm(formula = Life_expect ~ Income, data = SA)
-    qqnorm(SA_model1$residuals, pch = 16, main = "Normal QQ-Plot for South America Countries Life Expectancy vs. Income",
+    qqnorm(SA_model1$residuals, pch = 16, main = "Normal QQ-Plot for South 
+           America Countries Life Expectancy vs. Income",
            xlab = "Sample quantile", 
            ylab = "Sample residuals")
     qqline(SA_model1$residuals, col = "red")
@@ -600,14 +616,20 @@ server <- function(input, output, session) {
     #using log when lambda = 0
     if (input$lambda == 0) {
       SA_new_model1 <- lm(log(SA$Life_expect)~SA$Income)
-      qqnorm(SA_new_model1$residuals, pch = 16, main = "Normal QQ-Plot for South America Countries Life Expectancy vs. Income after Transformation", 
+      qqnorm(SA_new_model1$residuals, pch = 16, main = 
+               "Normal QQ-Plot for South America
+      Countries Life Expectancy vs. 
+      Income after Transformation", 
              xlab = "Sample quantile", 
              ylab = "Sample residuals")
       qqline(SA_new_model1$residuals, col = "red")
     }
     else {
       SA_new_model2 <- lm(((SA$Life_expect^input$lambda-1)/input$lambda) ~ SA$Income)
-      qqnorm(SA_new_model2$residuals, pch = 16, main = "Normal QQ-Plot for South America Countries Life Expectancy vs. Income after Transformation", 
+      qqnorm(SA_new_model2$residuals, pch = 16, main =
+               "Normal QQ-Plot for South America
+       Countries Life Expectancy vs. 
+       Income after Transformation", 
              xlab = "Sample quantile", 
              ylab = "Sample residuals")
       qqline(SA_new_model2$residuals, col = "red")
@@ -626,8 +648,8 @@ server <- function(input, output, session) {
     }
     else {
       G7_new_model2 <- lm(((countryData$Life_expect^input$lambda2-1)/input$lambda2) ~ countryData$Income)
-      qqnorm(G7_new_model2$residuals, pch = 16, main = "Normal QQ-Plot for U.S. Life Expectanct v.s.
-             Income after Transformation", 
+      qqnorm(G7_new_model2$residuals, pch = 16, main = "Normal QQ-Plot for U.S. Life Expectanct
+      v.s. Income after Transformation", 
              xlab = "Sample quantile", 
              ylab = "Sample residuals")
       qqline(G7_new_model2$residuals, col = "red")
