@@ -4,47 +4,24 @@ library(shinydashboard)
 library(shinyBS)
 library(shinyWidgets)
 library(boastUtils)
-library(rmarkdown)
-library(shinyAce)
 library(MASS)
-library(ggplot2)
-library(knitr)
-library(shinyjs)
 
-# Load additional dependencies and setup functions
-# source("helpers.R")
-
-#South America 
+# Load data files ----
+## South America 
 SA <- read.csv(file = "South_America_Life.csv")
 SA$Income <- as.numeric(SA$Income)
-#G7
+
+## G7
 countryData <- read.csv(file = "lifeExpect.csv")
 countryData$Income <- as.numeric(countryData$Income)
 
-
-#G7 Model
-G7_model1 <- lm(formula = Life_expect ~ Income, data = countryData)
-bc_life <- boxcox(object = G7_model1, lambda = seq(-2, 5, 1/4), data = countryData)
-bc_life_value <- bc_life$x[which.max(bc_life$y)]
-
-
-#SA Model 
-SA_model1 <- lm(formula = Life_expect ~ Income, data = SA)
-bc_SA <- boxcox(object = SA_model1, lambda = seq(-2, 5, 1/4), data = SA)
-bc_SA_value <- bc_SA$x[which.max(bc_SA$y)]
-
-
-
-# source("global.R")
-
-# Define UI for App ----
+# Define the UI ----
 ui <- list(
-  ## Create the app page ----
   dashboardPage(
-    skin = "blue",
-    ### Create the app header ----
+    skin = "black",
+    ## Header ----
     dashboardHeader(
-      title = "Box-Cox Transformation", # You may use a shortened form of the title here
+      title = "Box-Cox Transformation",
       titleWidth = 250,
       tags$li(class = "dropdown", actionLink("info", icon("info"))),
       tags$li(
@@ -58,14 +35,14 @@ ui <- list(
         )
       )
     ),
-    ### Create the sidebar/left navigation menu ----
+    ## Sidebar ----
     dashboardSidebar(
+      width = 250,
       sidebarMenu(
         id = "pages",
         menuItem("Overview", tabName = "overview", icon = icon("tachometer-alt")),
         menuItem("Prerequisites", tabName = "prerequisites", icon = icon("book")),
         menuItem("Explore", tabName = "explore", icon = icon("wpexplorer")),
-        # menuItem("Challenge", tabName = "challenge", icon = icon("gears")), 
         menuItem("References", tabName = "references", icon = icon("leanpub"))
       ),
       tags$div(
@@ -73,23 +50,22 @@ ui <- list(
         boastUtils::sidebarFooter()
       )
     ),
-    ### Create the content ----
+    ## Body ----
     dashboardBody(
       tabItems(
-        #### Set up the Overview Page ----
+        ### Overview Page ----
         tabItem(
           tabName = "overview",
           withMathJax(),
-          h1("Box-Cox Transformation"), # This should be the full name.
+          h1("Box-Cox Transformation"), 
           p("This app explores the use of the Box-Cox Transformation technique
             in real datasets to make data approximate to normal."),
           h2("Instructions"),
           tags$ol(
             tags$li("Review any prerequiste ideas using the Prerequistes tab."),
             tags$li("Read the instrutions carefully on each page."),
-            tags$li("Challenge yourself based on what you learn!"),
+            tags$li("Challenge yourself based on what you learn!")
           ),
-          ##### Go Button--location will depend on your goals ----
           div(
             style = "text-align: center;",
             bsButton(
@@ -100,7 +76,6 @@ ui <- list(
               style = "default"
             )
           ),
-          ##### Create two lines of space ----
           br(),
           br(),
           h2("Acknowledgements"),
@@ -108,12 +83,15 @@ ui <- list(
             "This version of the app was developed and coded by Qiaojuan Tu.",
             br(),
             br(),
+            "Cite this app as:",
+            br(),
+            boastUtils::citeApp(),
             br(),
             br(),
-            div(class = "updated", "Last Update: 5/19/2021 by NJH.")
+            div(class = "updated", "Last Update: 12/8/2021 by NJH.")
           )
         ),
-        #### Set up the Prerequisites Page ----
+        ### Prerequisites Page ----
         tabItem(
           tabName = "prerequisites",
           withMathJax(),
@@ -126,37 +104,35 @@ ui <- list(
             collapsible = TRUE,
             collapsed = FALSE,
             width = '100%',
-            "The Box-Cox Transformation is a procedure that is designed to find an
-            ideal transformation for \\(Y\\) in a linear regression model when 
-            data is not normal. As normality is a crucial assumption for 
-            many statistical tests, applying a Box-Cox Transformation will be
-            helpful with further analysis."
+            "The Box-Cox Transformation is a procedure that is designed to find 
+            an ideal transformation for \\(Y\\) in a linear regression model when 
+            data is not normal. As normality is a crucial assumption for many
+            statistical tests, applying a Box-Cox Transformation will be helpful
+            with further analysis."
           ),
           box(
-            title = strong("\\(\\lambda\\)-values"),
+            title = strong("\\(\\boldsymbol{\\lambda}\\)-values"),
             status = "primary",
             collapsible = TRUE,
             collapsed = FALSE,
             width = '100%',
             p("The core of the Box-Cox Transformation is the exponent, \\(\\lambda\\),
             which can vary from -5 to 5. The ideal \\(\\lambda\\) is the one that
-            provides the best approximation of a normal distribution curve. 
-            The original Box-Cox Transformation takes the following form:"), 
-            p("$$y(\\lambda)=\\begin{cases}
-               \\frac{y^{\\lambda}-1}\\lambda,  & \\text{if $\\lambda\\neq$ 0} \\\\
-               log(y), & \\text{if $\\lambda$ = 0}
-               \\end{cases}\\!$$"), 
-            p("*Note that the above test only works for positive data. If the data 
-              contains negative values, slight modification with the formula is
-              needed:"),
-            p("$$y(\\lambda)=\\begin{cases}
-               \\frac{(y+\\lambda_{2})^{\\lambda_{1}}-1}{\\lambda_{1}}, 
-               & \\text{if $\\lambda_{1}\\neq$ 0} \\\\
-               log(y+\\lambda_{2}), & \\text{if $\\lambda_{1}$ = 0}
-               \\end{cases}\\!$$"), 
-            p(
-              "$$Here, \\lambda = (\\lambda_{1}, \\lambda_{2})'$$"
-            )
+            provides the best approximation of a normal distribution curve. The
+            original Box-Cox Transformation takes the following form:
+            \\[y(\\lambda)=\\begin{cases}
+               \\frac{y^{\\lambda}-1}\\lambda, & \\text{if } \\lambda\\neq 0 \\\\
+               log(y), & \\text{if } \\lambda = 0
+               \\end{cases}\\]"), 
+            p(tags$em("Note:"), " the above test only works for positive data.
+              If the data contains negative values, a slight modification with
+              the formula is needed:
+              \\[y(\\lambda)=\\begin{cases}
+              \\frac{(y+\\lambda_{2})^{\\lambda_{1}}-1}{\\lambda_{1}}, &
+              \\text{if } \\lambda_{1}\\neq 0 \\\\
+               log(y+\\lambda_{2}), & \\text{if } \\lambda_{1} = 0
+               \\end{cases}\\]
+              Here, \\(\\lambda = (\\lambda_{1}, \\lambda_{2})'\\).")
           ), 
           box(
             title = strong("Normal Probability Plot"),
@@ -170,7 +146,7 @@ ui <- list(
               should be approximately linear.")
           ), 
           div(
-            style = "text-align: center",
+            style = "text-align: center;",
             bsButton(
               inputId = "explore",
               label = "Explore!",
@@ -180,205 +156,83 @@ ui <- list(
             )
           )
         ),
-        
-        #### Set up an Explore Page ----
+        ### Explore Page ----
         tabItem(
           tabName = "explore",
           withMathJax(),
-          h2("Finding optimal \\(\\lambda\\)-value for the Box-Cox Transformation"),
+          h2("Finding the Optimal \\(\\lambda\\)-value"),
           p("Instructions:"),
-          p("Step 1: Select your interested dataset, then look at the Normal QQ-Plot 
-            on the right, try to make a judgement on whether the current model is a good fit."),
-          p("Step 2: Play with the slidebar of the \\(\\lambda\\) value input, guess what 
-            \\(\\lambda\\) value for the box-cox transformation can make the model a better fit based on the Box-Cox Normality Plot."), 
-          p("*Hint: If the data is normally distributed, the points in the QQ-Plot would roughly lie
-            on a straight diagnal line."),
+          p("Step 1: Select your interested dataset, then look at the Normal
+            QQ-Plot in the middle, try to make a judgement on whether the current
+            model is a good fit."),
+          p("Step 2: Play with the \\(\\lambda\\) slider, guess which \\(\\lambda\\)
+            value for the Box-Cox transformation can make the model a better fit
+            based on the Box-Cox Normality Plot."), 
+          p("*Hint: If the data is normally distributed, the points in the QQ-Plot
+            would roughly lie on a straight diagnal line."),
           br(),
           fluidRow(
-            #Set up the Normal QQ plot
-            withMathJax(),
             column(
               width = 4, 
               wellPanel(
-                p(tags$strong("Select your dataset:")), 
                 selectInput(
-                  inputId = "dataset", 
-                  label = NULL, 
+                  inputId = "dataSet", 
+                  label = "Select your data set", 
                   choices = list("", "South America Country Life Expectancy vs. Income",
                                  "G7 Country Life Expectancy vs. Income"),
                   selected = FALSE, 
                   multiple = FALSE, 
                   width = "100%"
                 ), 
-                conditionalPanel(
-                  condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
-                  p("Dataset description:"),
-                  uiOutput("SA_Description")
-                ),
-                conditionalPanel(
-                  condition = "input.dataset == 'G7 Country Life Expectancy vs. Income'", 
-                  p("Dataset description:"),
-                  uiOutput("G7_Description")
-                ),
+                uiOutput("dataDescription"),
                 br(),
-                conditionalPanel(
-                  condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
-                  sliderInput(
-                    inputId = "lambda", 
-                    label = "\\(\\lambda\\)", 
-                    min = -5, 
-                    max = 5, 
-                    step = 0.01, 
-                    value = 0
-                  )
-                ), 
-                conditionalPanel(
-                  condition = "input.dataset == 'G7 Country Life Expectancy vs. Income' ", 
-                  sliderInput(
-                    inputId = "lambda2", 
-                    label = "\\(\\lambda\\)", 
-                    min = -5, 
-                    max = 5, 
-                    step = 0.01, 
-                    value = 0
-                  )
+                sliderInput(
+                  inputId = "lambda",
+                  label = "\\(\\lambda\\) value",
+                  min = -5,
+                  max = 5,
+                  step = 0.01,
+                  value = 0
                 )
               )
             ), 
-            
-            
             #Set up the Summary Panel
             column(
-              width = 4, 
-              conditionalPanel(
-                condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
-                plotOutput("SA_Transformed_Normal"),
-                plotOutput("SA_BoxCox") 
-              ), 
-              conditionalPanel(
-                condition = "input.dataset == 'G7 Country Life Expectancy vs. Income'", 
-                # plotOutput("G7_Original_Normal"), 
-                plotOutput("G7_Transformed_Normal"), 
-                plotOutput("G7_BoxCox")
-              ),
-              #   conditionalPanel(
-              #     condition = "input.dataset == 'SA'", 
-              #     plotOutput("SA_Transformed_Normal"), 
-              #     plotOutput("SA_BoxCox")
-              #   )
+              width = 4,
+              plotOutput("qqPlot"),
+              verbatimTextOutput("modelSummary")
             ),
             column(
-              width = 4, 
-              conditionalPanel(
-                condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
-                verbatimTextOutput("SA_Transformed_Summary"), 
-                br(), 
-                br(),
-                br(),
-                wellPanel(
-                  p(tags$strong("Guess the optimal \\(\\lambda\\)-value according to the graph")),            
-                  numericInput(
-                    inputId = "lam_input_SA", 
-                    label = NULL, 
-                    value = "", 
-                    min = -5, 
-                    step = 0.01, 
-                    max = 10
-                  ),
-                  actionButton(
-                    inputId = "lam_SA",
+              width = 4,
+              plotOutput("boxCoxPlot"),
+              numericInput(
+                inputId = "lambdaGuess",
+                label = "Guess the optimal \\(\\lambda\\) value",
+                value = "",
+                min = -5,
+                max = 10,
+                step = 0.01
+              ),
+              fluidRow(
+                column(
+                  width = 3,
+                  bsButton(
+                    inputId = "submitGuess",
                     label = "Submit",
-                    size = "small",
-                    icon = icon("bolt"),
-                    style = "default"
-                  ),
-                  uiOutput("submit_lam_SA"),
-                  uiOutput("lam_icon_SA")
+                    style = "default",
+                    size = "large"
+                  )
+                ),
+                column(
+                  width = 9,
+                  uiOutput("gradeMark")
                 )
               ),
-              
-              conditionalPanel(
-                condition  = "input.dataset == 'G7 Country Life Expectancy vs. Income'",
-                # verbatimTextOutput("G7_Original_Summary"), 
-                verbatimTextOutput("G7_Transformed_Summary"), 
-                br(), 
-                br(),
-                br(),
-                wellPanel(
-                  p(tags$strong("Guess the optimal \\(\\lambda\\)-value according to the graph")),            
-                  numericInput(
-                    inputId = "lam_input", 
-                    label = NULL, 
-                    value = " ", 
-                    min = -5, 
-                    step = 0.01, 
-                    max = 10
-                  ),
-                  actionButton(
-                    inputId = "lam",
-                    label = "Submit",
-                    size = "small",
-                    icon = icon("bolt"),
-                    style = "default"
-                  ),
-                  uiOutput("submit_lam"),
-                  uiOutput("lam_icon")
-                  # uiOutput("G7_bc_value")
-                )
-              )
+              uiOutput("feedback")
             )
           )
         ),
-        #### Set up a Challenge Page ----
-        #         tabItem(
-        #           tabName = "challenge",
-        #           withMathJax(),
-        #           h2("Generating the best \\(\\lambda\\)-value and making prediction "),
-        #           p("Instructions:"),
-        #           p("Step 1: Work with the SA dataset in which was showed in the previous
-        #             explore page, and run the following the sample code in the R workspace."),
-        #           p("Step 2: Try to learn from the sample code, then try to code for the US Life Expectany
-        #             vs. Income dataset."), 
-        #           column(
-        #             p("R Workspace:"), 
-        #             width = 6,
-        #             
-        #             aceEditor("rmd",
-        #                       mode = "markdown", 
-        #                       value = '
-        # ```{r}
-        # #Dataset Structure
-        # str(SA)
-        # 
-        # #Linear Model
-        # fullmodel = lm(Petal.Length~Petal.Width, data = SA)
-        # 
-        # #BoxCox Graph
-        # bc = boxcox(fullmodel)
-        # 
-        # #Generating the best lambda value 
-        # best.lambda = bc$Petal.Width[which(bc$Petal.Length == max(bc$Petal.Length))]
-        # 
-        # ````
-        #                
-        #   
-        #           
-        #            ' ), 
-        #             withBusyIndicatorUI(
-        #               actionButton(
-        #                 inputId = "r_code", 
-        #                 label = "Run"
-        #               )
-        #             )
-        #           ), 
-        #           column(
-        #             width = 6,  
-        #             p("Knited Output:"),
-        #             htmlOutput("knitDoc")
-        #           )
-        #         ),
-        
-        #### Set up the References Page ----
+        ### References Page ----
         tabItem(
           tabName = "references",
           withMathJax(),
@@ -453,20 +307,9 @@ ui <- list(
   )
 )
 
-
-
-
-
-
-
-
-
-
 # Define server logic ----
 server <- function(input, output, session) {
-  
-  
-  
+
   ## Buttons Set up ----
   ### Set up Info button ----
   observeEvent(
@@ -499,301 +342,185 @@ server <- function(input, output, session) {
     )
   })
   
-  #### G7 submit button render
+  dataSet <- reactiveVal(0)
+  scoring <- reactiveValues(
+    icon = 0,
+    feedback = 0
+  )
+  
+  ## Update dataset selected and description ----
   observeEvent(
-    eventExpr = input$lam,
+    eventExpr = input$dataSet,
     handlerExpr = {
-      output$lam_icon <- renderIcon()
-      output$submit_lam <- renderUI(NULL)
-    }
-  )
-
-  ## Set up the lambda submit button for G7 ----
-  observeEvent(
-    eventExpr = input$lam,
-    updateTabItems(
-      session = session,
-      inputId = "lam",
-      output$lam_icon <- renderIcon(
-        if (input$lam_input <= 5 & input$lam_input >= 4) {condition = "correct"}
-        else if (input$lam_input < 4 | input$lam_input >= 3.5) {condition = "partial"}
-        else {condition = "incorrect"}
-      )
-    )
-  )
-
-  #### G7 life lambda value submit
-  observeEvent(
-    eventExpr = input$lam,
-    updateTabItems(
-      session = session,
-      inputId = "lam",
-      output$submit_lam <- renderText(({
-        if (input$lam_input >= 4 | input$lam_input >= 5) {print("Congratulations! Your guess for \\(\\lambda\\)-value is correct!")}
-        else if (input$lam_input < 4 | input$lam_input >= 3.5) {print("You are close!")}
-        else {print("Try again!")}
-      }))
-    )
-  )
-
-  
-  
-  #### SA submit button render
-  observeEvent(
-    eventExpr = input$lam_SA,
-    handlerExpr = {
-      output$lam_icon_SA <- renderIcon()
-      output$submit_lam_SA <- renderUI(NULL)
-    }
-  )
-  
-  ### Set up the lamda submit button for SA ----
-  observeEvent(
-    eventExpr = input$lam_SA,
-    updateTabItems(
-      session = session,
-      inputId = "lam_SA",
-      output$lam_icon_SA <- renderIcon(
-        if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {condition = "correct"}
-        else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1) {condition = "partial"}
-        else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {condition = "partial"}
-        else {condition = "incorrect"}
-      )
-    )
-  )
-  
-  
-  #### SA life lambda value submit
-  observeEvent(
-    eventExpr =  input$lam_SA,
-    updateTabItems(
-      session = session,
-      inputId = "lam_SA",
-      output$submit_lam_SA <- renderText(({
-        if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
-        else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1 ) {print("You are close!")}
-        else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {print("You are close!")}
-        else {print("Try again!")}
-      }))
-    )
-  )
-  # 
-  # observeEvent(
-  #   eventExpr = input$lam_SA, 
-  #   handlerExpr = {
-  #     output$lam_icon_SA <- renderIcon(
-  #             if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {condition = "correct"}
-  #             else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1) {condition = "partial"}
-  #             else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {condition = "partial"}
-  #             else {condition = "incorrect"}
-  #           )
-  #     output$submit_lam_SA <- renderText(({
-  #             if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
-  #             else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1 ) {print("You are close!")}
-  #             else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {print("You are close!")}
-  #             else {print("Try again!")}
-  #           }))
-  #   }
-  # )  
-  # 
-  # 
-  
-  
-
-  ## Set up the Explore Page ----
-  
-  ### The Data Description ----
-  #### SA Data Set
-  output$SA_Description <- renderUI({
-    p("The data set gives the variables of 13 South America countries averged life expectancy in years
-      and income in GDP/capita from year 1900 to 2020, includes Brazil, Argentina, Colombia, Peru, Chile, Ecuador, 
-      Venezuela, Bolivia, Uruguay, Suriname, Paraguay, Trinidad and Tobago. Here, the income is used as the predictor variable,
-      and life expectancy is used as the response variable for the linear regression model.")
-  })
-  
-  #### Life expect vs Income Data Set  
-  output$G7_Description <- renderUI({
-    p("The data set gives the variables of G7 countries (Canada, UK, US, Germany, Japan,
-    Italy, and France) averaged life expetancy in years 
-      and income in GDP/capita from year 1900 to 2020. Here, we use the income as
-      predictor variable, and life expectancy as response variable for the linear
-      regression model.")
-  })
-  
-  
-  
-  
-  ### The Original Normal Plot ----
-  ####SA Normal Plot
-  output$SA_Original_Normal <- renderPlot({
-    #fit linear regression model, Petal.Length as responding variable
-    SA_model1 <- lm(formula = Life_expect ~ Income, data = SA)
-    qqnorm(SA_model1$residuals, pch = 16, main = "Normal QQ-Plot for South 
-           America Countries Life Expectancy vs. Income",
-           xlab = "Sample quantile", 
-           ylab = "Sample residuals")
-    qqline(SA_model1$residuals, col = "red")
-  })
-  
-  
-  #### G7_Expectancy Normal Plot
-  output$G7_Original_Normal <- renderPlot({
-    G7_model1 <- lm(countryData$Life_expect~countryData$Income)
-    qqnorm(G7_model1$residuals, pch = 16, main = "Normal QQ-Plot for U.S. Life Expectancy vs. Income", 
-           xlab = "Sample quantile", 
-           ylab = "Sample residuals")
-    qqline(G7_model1$residuals, col = "red")
-  })
-  
-  ### Transformed Normal Plot ----
-  ####SA Transformed Normal Plot
-  output$SA_Transformed_Normal <- renderPlot({
-    #fit new model using box cox
-    #using log when lambda = 0
-    if (input$lambda == 0) {
-      SA_new_model1 <- lm(log(SA$Life_expect)~SA$Income)
-      qqnorm(SA_new_model1$residuals, pch = 16, main = 
-               "Normal QQ-Plot for South America
-      Countries Life Expectancy vs. 
-      Income after Transformation", 
-             xlab = "Sample quantile", 
-             ylab = "Sample residuals")
-      qqline(SA_new_model1$residuals, col = "red")
-    }
-    else {
-      SA_new_model2 <- lm(((SA$Life_expect^input$lambda-1)/input$lambda) ~ SA$Income)
-      qqnorm(SA_new_model2$residuals, pch = 16, main =
-               "Normal QQ-Plot for South America
-       Countries Life Expectancy vs. 
-       Income after Transformation", 
-             xlab = "Sample quantile", 
-             ylab = "Sample residuals")
-      qqline(SA_new_model2$residuals, col = "red")
-    }
-  })
-  
-  #### G7_Expectancy Transformed Normal Plot
-  output$G7_Transformed_Normal <- renderPlot({
-    if (input$lambda2 == 0) {
-      G7_new_model1 <- lm(log(countryData$Life_expect)~countryData$Income)
-      qqnorm(G7_new_model1$residuals, pch = 16, main = "Normal QQ-Plot for U.S. Life Expectancy
-             v.s. Income after Transformation", 
-             xlab = "Sample quantile", 
-             ylab = "Sample residuals")
-      qqline(G7_new_model1$residuals, col = "red")
-    }
-    else {
-      G7_new_model2 <- lm(((countryData$Life_expect^input$lambda2-1)/input$lambda2) ~ countryData$Income)
-      qqnorm(G7_new_model2$residuals, pch = 16, main = "Normal QQ-Plot for U.S. Life Expectanct
-      v.s. Income after Transformation", 
-             xlab = "Sample quantile", 
-             ylab = "Sample residuals")
-      qqline(G7_new_model2$residuals, col = "red")
-    }
-  })
-  
-  ### Summary Output ---- 
-  ### SA original summary
-  output$SA_Original_Summary <- renderPrint({
-    SA_model1 <- lm(SA$Life_expect~SA$Income)
-    summary(SA_model1)
-  })
-  
-  ### SA Transformed summary 
-  output$SA_Transformed_Summary <- renderPrint({
-    if (input$lambda == 0) {
-      SA_new_model1 <- lm(log(SA$Life_expect)~SA$Income)
-      summary(SA_new_model1)
-    }
-    else{
-      SA_new_model2 <- lm(((SA$Life_expect^input$lambda-1)/input$lambda) ~ SA$Income)
-      summary(SA_new_model2)
-    }
-  })
-  
-  ### G7 Original summary
-  output$G7_Original_Summary <- renderPrint({
-    G7_model1 <- lm(countryData$Life_expect~countryData$Income)
-    summary(G7_model1)
-  })
-  
-  ### G7 Transformed summary
-  output$G7_Transformed_Summary <- renderPrint({
-    if (input$lambda2 == 0) {
-      G7_new_model1 <- lm(log(countryData$Life_expect)~countryData$Income)
-      summary(G7_new_model1)
-    }
-    else {
-      G7_new_model2 <- lm(((countryData$Life_expect^input$lambda2-1)/input$lambda2) ~ countryData$Income) 
-      summary(G7_new_model2)
-    }
-  })
-  
-  ### G7 Box Cox Plot----
-  ###Plot
-  output$G7_BoxCox <- renderPlot({
-    # G7_model1 <- lm(countryData$Life_expect~countryData$Income)
-    bc_life <- boxcox(G7_model1, lambda = seq(-2,5, 1/4), data = countryData)
-  })
-  
-  ### G7 lambda value output
-  output$G7_bc_value <- renderPrint({
-    bc_life_value <- bc_life$x[which.max(bc_life$y)]
-  })
-  
-  ### SA Box Cox Plot ---- 
-  ### Plot
-  output$SA_BoxCox <- renderPlot({
-    bc_SA <- boxcox(object = SA_model1, lambda = seq(-2, 5, 1/4), data = SA)
-  })
-  
-  ### SA lambda value output 
-  output$SA_bc_value <- renderPrint({
-    bc_SA_value <- bc_SA$x[which.max(bc_SA$y)]
-  })
-  
-  
-  
-  ## Set up the Challenge Page ----
-  ### Rmarkdown knit output 
-  observeEvent(input$r_code, {
-    withBusyIndicatorServer(
-      "r_code", 
-      {
-        output$knitDoc <- renderUI({
-          return(
-            isolate(
-              HTML(knit2html(
-                text = input$rmd, 
-                fragment.only = TRUE, 
-                quiet = FALSE
-              )
-              )
-            )
-          )
-        })
+      output$dataDescription <- renderUI({
+        if (input$dataSet == "South America Country Life Expectancy vs. Income") {
+          p("This data set gives the variables of 13 South America countries
+            averged life expectancy in years and income in GDP/capita from 1900 
+            to 2020. Countries included Brazil, Argentina, Colombia, Peru, Chile,
+            Ecuador, Venezuela, Bolivia, Uruguay, Suriname, Paraguay,
+            Trinidad and Tobago. Here, the income is used as the predictor variable,
+            and life expectancy is used as the response variable for the linear
+            regression model.")
+        } else if (input$dataSet == "G7 Country Life Expectancy vs. Income") {
+          p("The data set gives the variables of G7 countries (Canada, UK, US,
+            Germany, Japan, Italy, and France) averaged life expetancy in years
+            and income in GDP/capita from year 1900 to 2020. Here, we use the
+            income as predictor variable, and life expectancy as response
+            variable for the linear regression model.")
+        } else {
+          NULL
+        }
+      })
+      
+      if (input$dataSet == "South America Country Life Expectancy vs. Income") {
+        dataSet(SA)
+      } else if (input$dataSet == "G7 Country Life Expectancy vs. Income") {
+        dataSet(countryData)
       }
-    )
-  })
+    }
+  )
   
-  output$output <- renderPrint({
-    return(isolate(
-      r_code(
-        parse(
-          text = input$code
+  
+  ## Create QQ Plot ----
+  output$qqPlot <- renderPlot(
+    expr = {
+      validate(
+        need(
+          expr = input$dataSet != "",
+          message = "Choose a data set"
         )
       )
-    ))
-  })
+      if (input$lambda == 0) {
+        model <- lm(
+          formula = log(Life_expect) ~ Income,
+          data = dataSet()
+        )
+      } else {
+        model <- lm(
+          formula = (Life_expect^input$lambda - 1) / input$lambda ~ Income,
+          data = dataSet()
+        )
+      }
+      qqnorm(
+        model$residuals,
+        pch = 16,
+        main = "QQ-Plot Post Transformation", 
+       xlab = "Sample quantile", 
+       ylab = "Sample residuals"
+      )
+      qqline(model$residuals, col = "red")
+    },
+    alt = "fill me in"
+  )
+  
+  ## Print model summary ----
+  output$modelSummary <- renderPrint(
+    expr = {
+      validate(
+        need(
+          expr = input$dataSet != "",
+          message = "Choose a data set"
+        )
+      )
+      if (input$lambda == 0) {
+        model <- lm(
+          formula = log(Life_expect) ~ Income,
+          data = dataSet()
+        )
+      } else {
+        model <- lm(
+          formula = (Life_expect^input$lambda - 1) / input$lambda ~ Income,
+          data = dataSet()
+        )
+      }
+      summary(model)
+    }
+  )
+  
+  ## Create box cox plot ----
+  output$boxCoxPlot <- renderPlot(
+    expr = {
+      validate(
+        need(
+          expr = input$dataSet != "",
+          message = "Choose a data set"
+        )
+      )
+      model <-  lm(
+        formula = Life_expect ~ Income,
+        data = dataSet()
+      )
+      boxcox(object = model, lambda = seq(-2, 5, 1/4), data = dataSet())
+    },
+    alt = "fill me in"
+  )
+  
+  ## Answer checking ----
+  observeEvent(
+    eventExpr = input$submitGuess,
+    handlerExpr = {
+      if (is.na(input$lambdaGuess)) {
+        sendSweetAlert(
+          session = session,
+          title = "Error",
+          text = "Please enter a guess for the lambda value first.",
+          type = "error"
+        )
+      } else {
+        model <-  lm(
+          formula = Life_expect ~ Income,
+          data = dataSet()
+        )
+        bcResult <- boxcox(
+          object = model,
+          lambda = seq(-2, 5, 1/4),
+          data = dataSet(),
+          plotit = FALSE
+        )
+        correctAnswer <- bcResult$x[which.max(bcResult$y)]
+        
+        if (input$lambdaGuess == correctAnswer) {
+          scoring$icon <- "correct"
+          scoring$feedback <- "Great job!"
+        } else if (abs(input$lambdaGuess - correctAnswer) <= 0.5) {
+          scoring$icon <- "correct"
+          scoring$feedback <- "Good guess"
+        } else if (abs(input$lambdaGuess - correctAnswer) <= 1) {
+          scoring$icon <- "partial"
+          scoring$feedback <- "You're close."
+        } else {
+          scoring$icon <- "incorrect"
+          scoring$feedback <- "Not quite; please try again."
+        }
+        
+        output$gradeMark <- renderIcon(icon = scoring$icon)
+        output$feedback <- renderUI({
+          p(scoring$feedback)
+        })
+      }
+    }
+  )
+  
+  ## Clear marks and feedback ----
+  observeEvent(
+    eventExpr = c(input$dataSet, input$lambda, input$lambdaGuess),
+    handlerExpr = {
+      output$gradeMark <- renderIcon()
+      output$feedback <- renderUI({NULL})
+    }
+  )
+  
+  observeEvent(
+    eventExpr = c(input$dataSet, input$lambda),
+    handlerExpr = {
+      updateNumericInput(
+        session = session,
+        inputId = "lambdaGuess",
+        value = ""
+      )
+    }
+  )
 }
 
-
-### Reactive Input
-
-inputs = reactive(
-  {
-    value = c(input$lambda)
-  }
-)
 # Boast App Call ----
 boastUtils::boastApp(ui = ui, server = server)
