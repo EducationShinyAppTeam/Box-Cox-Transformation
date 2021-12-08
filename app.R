@@ -64,7 +64,7 @@ ui <- list(
           tags$ol(
             tags$li("Review any prerequiste ideas using the Prerequistes tab."),
             tags$li("Read the instrutions carefully on each page."),
-            tags$li("Challenge yourself based on what you learn!")
+            tags$li("Explore how Box-Cox transformation improve the normality of regression residuals.")
           ),
           div(
             style = "text-align: center;",
