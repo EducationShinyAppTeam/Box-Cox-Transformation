@@ -536,6 +536,17 @@ server <- function(input, output, session) {
     )
   )
 
+  
+  
+  #### SA submit button render
+  observeEvent(
+    eventExpr = input$lam_SA,
+    handlerExpr = {
+      output$lam_icon_SA <- renderIcon()
+      output$submit_lam_SA <- renderUI(NULL)
+    }
+  )
+  
   ### Set up the lamda submit button for SA ----
   observeEvent(
     eventExpr = input$lam_SA,
