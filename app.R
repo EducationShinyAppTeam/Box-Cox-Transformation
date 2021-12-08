@@ -87,7 +87,7 @@ ui <- list(
           tags$ol(
             tags$li("Review any prerequiste ideas using the Prerequistes tab."),
             tags$li("Read the instrutions carefully on each page."),
-            tags$li("Challenge yourself based on what you learn!"),
+            tags$li("Use the Explore page to see examples of Box-Cox transformation."),
           ),
           ##### Go Button--location will depend on your goals ----
           div(
@@ -110,7 +110,7 @@ ui <- list(
             br(),
             br(),
             br(),
-            div(class = "updated", "Last Update: 5/19/2021 by NJH.")
+            div(class = "updated", "Last Update: 12/07/2021 by Qiaojuan Tu.")
           )
         ),
         #### Set up the Prerequisites Page ----
@@ -145,18 +145,18 @@ ui <- list(
             p("$$y(\\lambda)=\\begin{cases}
                \\frac{y^{\\lambda}-1}\\lambda,  & \\text{if $\\lambda\\neq$ 0} \\\\
                log(y), & \\text{if $\\lambda$ = 0}
-               \\end{cases}\\!$$"), 
-            p("*Note that the above test only works for positive data. If the data 
-              contains negative values, slight modification with the formula is
-              needed:"),
-            p("$$y(\\lambda)=\\begin{cases}
-               \\frac{(y+\\lambda_{2})^{\\lambda_{1}}-1}{\\lambda_{1}}, 
-               & \\text{if $\\lambda_{1}\\neq$ 0} \\\\
-               log(y+\\lambda_{2}), & \\text{if $\\lambda_{1}$ = 0}
-               \\end{cases}\\!$$"), 
-            p(
-              "$$Here, \\lambda = (\\lambda_{1}, \\lambda_{2})'$$"
-            )
+               \\end{cases}\\!$$")
+            # p("*Note that the above test only works for positive data. If the data 
+            #   contains negative values, slight modification with the formula is
+            #   needed:"),
+            # p("$$y(\\lambda)=\\begin{cases}
+            #    \\frac{(y+\\lambda_{2})^{\\lambda_{1}}-1}{\\lambda_{1}}, 
+            #    & \\text{if $\\lambda_{1}\\neq$ 0} \\\\
+            #    log(y+\\lambda_{2}), & \\text{if $\\lambda_{1}$ = 0}
+            #    \\end{cases}\\!$$"), 
+            # p(
+            #   "$$Here, \\lambda = (\\lambda_{1}, \\lambda_{2})'$$"
+            # )
           ), 
           box(
             title = strong("Normal Probability Plot"),
@@ -190,7 +190,7 @@ ui <- list(
           p("Step 1: Select your interested dataset, then look at the Normal QQ-Plot 
             on the right, try to make a judgement on whether the current model is a good fit."),
           p("Step 2: Play with the slidebar of the \\(\\lambda\\) value input, guess what 
-            \\(\\lambda\\) value for the box-cox transformation can make the model a better fit based on the Box-Cox Normality Plot."), 
+            \\(\\lambda\\) value for the box-cox transformation can make the model a better fit based on the log-likelihood graph."), 
           p("*Hint: If the data is normally distributed, the points in the QQ-Plot would roughly lie
             on a straight diagnal line."),
           br(),
@@ -500,6 +500,7 @@ server <- function(input, output, session) {
   })
   
   #### G7 submit button render
+  #The button jumps as changing input of numbers
   observeEvent(
     eventExpr = input$lam,
     handlerExpr = {
