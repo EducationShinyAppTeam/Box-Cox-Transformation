@@ -10,15 +10,12 @@ library(MASS)
 library(ggplot2)
 library(knitr)
 library(shinyjs)
-# library(sp)
-# library(gstat)
-
 
 # Load additional dependencies and setup functions
 # source("helpers.R")
 
 #South America 
-SA <- read.csv(file = "South_America_life.csv")
+SA <- read.csv(file = "South_America_Life.csv")
 SA$Income <- as.numeric(SA$Income)
 #G7
 countryData <- read.csv(file = "lifeExpect.csv")
@@ -199,6 +196,7 @@ ui <- list(
           br(),
           fluidRow(
             #Set up the Normal QQ plot
+            withMathJax(),
             column(
               width = 4, 
               wellPanel(
@@ -206,14 +204,14 @@ ui <- list(
                 selectInput(
                   inputId = "dataset", 
                   label = NULL, 
-                  choices = list("", "SA",
+                  choices = list("", "South America Country Life Expectancy vs. Income",
                                  "G7 Country Life Expectancy vs. Income"),
                   selected = FALSE, 
                   multiple = FALSE, 
                   width = "100%"
                 ), 
                 conditionalPanel(
-                  condition = "input.dataset == 'SA'", 
+                  condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
                   p("Dataset description:"),
                   uiOutput("SA_Description")
                 ),
@@ -224,7 +222,7 @@ ui <- list(
                 ),
                 br(),
                 conditionalPanel(
-                  condition = "input.dataset == 'SA'", 
+                  condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
                   sliderInput(
                     inputId = "lambda", 
                     label = "\\(\\lambda\\)", 
@@ -253,7 +251,7 @@ ui <- list(
             column(
               width = 4, 
               conditionalPanel(
-                condition = "input.dataset == 'SA'", 
+                condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
                 plotOutput("SA_Transformed_Normal"),
                 plotOutput("SA_BoxCox") 
               ), 
@@ -272,7 +270,7 @@ ui <- list(
             column(
               width = 4, 
               conditionalPanel(
-                condition = "input.dataset == 'SA'", 
+                condition = "input.dataset == 'South America Country Life Expectancy vs. Income'", 
                 verbatimTextOutput("SA_Transformed_Summary"), 
                 br(), 
                 br(),
@@ -501,12 +499,21 @@ server <- function(input, output, session) {
     )
   })
   
-  ### Set up the lamda submit button for G7 ----
+  #### G7 submit button render
+  observeEvent(
+    eventExpr = input$lam,
+    handlerExpr = {
+      output$lam_icon <- renderIcon()
+      output$submit_lam <- renderUI(NULL)
+    }
+  )
+
+  ## Set up the lambda submit button for G7 ----
   observeEvent(
     eventExpr = input$lam,
     updateTabItems(
-      session = session, 
-      inputId = "lam", 
+      session = session,
+      inputId = "lam",
       output$lam_icon <- renderIcon(
         if (input$lam_input <= 5 & input$lam_input >= 4) {condition = "correct"}
         else if (input$lam_input < 4 | input$lam_input >= 3.5) {condition = "partial"}
@@ -514,28 +521,27 @@ server <- function(input, output, session) {
       )
     )
   )
-  
-  #### G7 life lambda value submit 
+
+  #### G7 life lambda value submit
   observeEvent(
     eventExpr = input$lam,
     updateTabItems(
-      session = session, 
-      inputId = "lam", 
+      session = session,
+      inputId = "lam",
       output$submit_lam <- renderText(({
-        if (input$lam_input >= 4 | input$lam_input >= 5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
+        if (input$lam_input >= 4 | input$lam_input >= 5) {print("Congratulations! Your guess for \\(\\lambda\\)-value is correct!")}
         else if (input$lam_input < 4 | input$lam_input >= 3.5) {print("You are close!")}
         else {print("Try again!")}
       }))
     )
   )
-  
-  
+
   ### Set up the lamda submit button for SA ----
   observeEvent(
     eventExpr = input$lam_SA,
     updateTabItems(
-      session = session, 
-      inputId = "lam_SA", 
+      session = session,
+      inputId = "lam_SA",
       output$lam_icon_SA <- renderIcon(
         if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {condition = "correct"}
         else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1) {condition = "partial"}
@@ -545,25 +551,44 @@ server <- function(input, output, session) {
     )
   )
   
+  
   #### SA life lambda value submit
   observeEvent(
-    eventExpr =  input$lam_SA, 
+    eventExpr =  input$lam_SA,
     updateTabItems(
       session = session,
-      inputId = "lam_SA", 
+      inputId = "lam_SA",
       output$submit_lam_SA <- renderText(({
         if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
         else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1 ) {print("You are close!")}
         else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {print("You are close!")}
         else {print("Try again!")}
-      })) 
+      }))
     )
   )
+  # 
+  # observeEvent(
+  #   eventExpr = input$lam_SA, 
+  #   handlerExpr = {
+  #     output$lam_icon_SA <- renderIcon(
+  #             if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {condition = "correct"}
+  #             else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1) {condition = "partial"}
+  #             else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {condition = "partial"}
+  #             else {condition = "incorrect"}
+  #           )
+  #     output$submit_lam_SA <- renderText(({
+  #             if (input$lam_input_SA <= 2.5 & input$lam_input_SA >= 1.5) {print("Congratulations! Your guess for \\(\\lambda\\) value is correct!")}
+  #             else if (input$lam_input_SA < 1.5 | input$lam_input_SA >= 1 ) {print("You are close!")}
+  #             else if (input$lam_input_SA < 3 | input$lam_input_SA > 2.5) {print("You are close!")}
+  #             else {print("Try again!")}
+  #           }))
+  #   }
+  # )  
+  # 
+  # 
   
   
-  
-  #### SA life lambda value submit
-  
+
   ## Set up the Explore Page ----
   
   ### The Data Description ----

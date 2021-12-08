@@ -19,4 +19,7 @@ data$Income <- lapply(
 
 data$Income <- as.numeric(data$Income)
 
+
 fwrite(data, "./South_America_Life.csv")
+
+
