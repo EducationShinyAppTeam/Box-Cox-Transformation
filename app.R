@@ -64,7 +64,8 @@ ui <- list(
           tags$ol(
             tags$li("Review any prerequiste ideas using the Prerequistes tab."),
             tags$li("Read the instrutions carefully on each page."),
-            tags$li("Explore how Box-Cox transformation improve the normality of regression residuals.")
+            tags$li("Explore how Box-Cox transformation improve the normality of
+                    regression residuals.")
           ),
           div(
             style = "text-align: center;",
@@ -238,56 +239,6 @@ ui <- list(
           withMathJax(),
           h2("References"),
           p(
-            class = "hangingindent", 
-            "Wickham H (2016). ggplot2: Elegant Graphics for Data Analysis. 
-            Springer-Verlag New York. ISBN 978-3-319-24277-4"
-          ),
-          p(
-            class = "hangingindent", 
-            "Venables WN and Ripley BD (2002). MASS: Modern Applied Statistics
-            with S, Fourth edition. Springer, New York. ISBN 0-387-95457-0"
-          ),
-          p(
-            class = "hangingindent", 
-            "Chang W, Cheng J, Allaire J, Xie Y and McPherson J (2017). shiny:
-            Web Application Framework for R. R package version 1.0.3"
-          ), 
-          p(
-            class = "hangingindent", 
-            "Chang W and Borges Ribeiro B (2017). shinydashboard: Create
-            Dashboards with 'Shiny'. R package version 0.6.1"
-          ),
-          p(
-            class = "hangingindent", 
-            " Attali D (2016). shinyjs: Easily Improve the User 
-            Experience of Your Shiny Apps in Seconds. R package version 0.9"
-          ),
-          p(
-            class = "hangingindent", 
-            "Victor Perrier, Fanny Meyer and David Granjon (2018). 
-            shinyWidgets: Custom Inputs Widgets for Shiny.
-            R package version 0.4.3."
-          ),
-          p(
-            class = "hangingindent", 
-            "Allaire JJ, Xie Y., rmarkdown: Convert R Markdown documents into a variety
-            of formats."
-          ),
-          p(
-            class = "hangingindent", 
-            "Xie Y., Sarma A., Vogt A., knitr: Provides a general=purpose tool for
-            dynamic report generation in R using Literate Programming techniques."
-          ),
-          p(
-            class = "hangingindent", 
-            "Carey, R. (2019), boastUtils: BOAST Utilities, R Package. Available from https://github.com/EducationShinyAppTeam/boastUtils"
-          ), 
-          p(
-            class = "hangingindent", 
-            "Nijs V., Fang F., shinyAce: Ave editor bidings to enable a rich text editing
-            environment within Shiny. R package version 0.4.1."
-          ),
-          p(
             class = "hangingindent",
             "Bailey, E. (2015). shinyBS: Twitter bootstrap components for shiny.
             (v0.61). [R package]. Available from
@@ -295,8 +246,33 @@ ui <- list(
           ),
           p(
             class = "hangingindent", 
-            "G7_Expectancy data: https://www.gapminder.org/data/"
+            "Carey, R. (2019), boastUtils: BOAST Utilities, R Package. Available from https://github.com/EducationShinyAppTeam/boastUtils"
+          ),
+          p(
+            class = "hangingindent", 
+            "Chang, W. and Borges Ribeiro, B. (2017). shinydashboard: Create
+            Dashboards with 'Shiny'. R package version 0.6.1"
+          ),
+          p(
+            class = "hangingindent", 
+            "Chang, W., Cheng J., Allaire, J., Xie, Y., and McPherson, J. (2017). shiny:
+            Web Application Framework for R. R package version 1.0.3"
+          ),
+          p(
+            class = "hangingindent", 
+            "Life expectancy and income data: https://www.gapminder.org/data/"
           ), 
+          p(
+            class = "hangingindent", 
+            "Perrier, V., Meyer, F. and Granjon, D. (2018). 
+            shinyWidgets: Custom Inputs Widgets for Shiny.
+            R package version 0.4.3."
+          ),
+          p(
+            class = "hangingindent", 
+            "Venables, W. N. and Ripley, B. D. (2002). MASS: Modern Applied Statistics
+            with S, Fourth edition. Springer, New York. ISBN 0-387-95457-0"
+          ),
           br(),
           br(),
           br(),
@@ -319,28 +295,33 @@ server <- function(input, output, session) {
         session = session,
         type = "info",
         title = "Information",
-        text = "This App Template will help you get started building your own app"
+        text = "Use this app to explore Box Cox transformations"
       )
     }
   )
   ### Set up the Go Button ----
-  observeEvent(input$go1, {
-    updateTabItems(
-      session = session, 
-      inputId = "pages",
-      selected = "prerequisites"
-    )
-  }
+  observeEvent(
+    eventExpr = input$go1, 
+    handlerExpr = {
+      updateTabItems(
+        session = session, 
+        inputId = "pages",
+        selected = "prerequisites"
+      )
+    }
   )
   
   ### Set up the Explore button ----
-  observeEvent(input$explore, {
-    updateTabItems(
-      session = session, 
-      inputId = "pages", 
-      selected = "explore"
-    )
-  })
+  observeEvent(
+    eventExpr = input$explore, 
+    handlerExpr = {
+      updateTabItems(
+        session = session, 
+        inputId = "pages", 
+        selected = "explore"
+      )
+    }
+  )
   
   dataSet <- reactiveVal(0)
   scoring <- reactiveValues(
@@ -410,7 +391,7 @@ server <- function(input, output, session) {
       )
       qqline(model$residuals, col = "red")
     },
-    alt = "fill me in"
+    alt = "QQ plot for the residuals post the Box-Cox transformation"
   )
   
   ## Print model summary ----
@@ -452,7 +433,8 @@ server <- function(input, output, session) {
       )
       boxcox(object = model, lambda = seq(-2, 5, 1/4), data = dataSet())
     },
-    alt = "fill me in"
+    alt = "Box Cox plot showing the log-likelihood values for each possible
+    lambda value"
   )
   
   ## Answer checking ----
@@ -484,7 +466,7 @@ server <- function(input, output, session) {
           scoring$feedback <- "Great job!"
         } else if (abs(input$lambdaGuess - correctAnswer) <= 0.5) {
           scoring$icon <- "correct"
-          scoring$feedback <- "Good guess"
+          scoring$feedback <- "Good guess!"
         } else if (abs(input$lambdaGuess - correctAnswer) <= 1) {
           scoring$icon <- "partial"
           scoring$feedback <- "You're close."
@@ -494,9 +476,7 @@ server <- function(input, output, session) {
         }
         
         output$gradeMark <- renderIcon(icon = scoring$icon)
-        output$feedback <- renderUI({
-          p(scoring$feedback)
-        })
+        output$feedback <- renderUI({p(scoring$feedback)})
       }
     }
   )
@@ -520,6 +500,7 @@ server <- function(input, output, session) {
       )
     }
   )
+  
 }
 
 # Boast App Call ----
